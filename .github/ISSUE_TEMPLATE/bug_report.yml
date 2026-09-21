@@ -1,0 +1,64 @@
+name: Bug report
+description: Report a reproducible NanoKMC problem
+title: "[bug] "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for helping improve NanoKMC. Please include enough scientific and software context to reproduce the problem.
+  - type: input
+    id: version
+    attributes:
+      label: NanoKMC version / commit
+      placeholder: v0.1.0 or commit SHA
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Platform and compiler
+      placeholder: Windows 11 + MSYS2 UCRT64 GCC 16.x, or Ubuntu + GCC 14, etc.
+    validations:
+      required: true
+  - type: dropdown
+    id: solver
+    attributes:
+      label: Solver
+      options:
+        - KMCClassical
+        - KMCActiveFilteredGeneric
+        - KMCActiveFilteredBinaryNN
+        - KMCPartialFilterOptimized
+        - KMCRateCategoryOptimized
+        - KMCExactClassOptimized
+        - Output/evaluation layer
+        - Build/installation
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Minimal reproduction
+      description: Include the command and the smallest relevant nanokmc.in / CalcData.csv settings.
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior and logs
+      description: Include terminal output or log.dat where useful.
+    validations:
+      required: true
+  - type: checkboxes
+    id: validation
+    attributes:
+      label: Validation
+      options:
+        - label: I ran `ctest --test-dir build --output-on-failure` and included any failure above.

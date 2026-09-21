@@ -1,0 +1,40 @@
+# Build trees
+build/
+cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+
+# NanoKMC generated run output
+**/log.dat
+**/evaluation/*.csv
+**/evaluation/*.sce
+**/evaluation/Rasmol/
+**/evaluation/OnefileRasmol/
+**/evaluation/BlenderSimple/
+**/evaluation/CSV/
+**/evaluation/AxialCompositionProfile/
+**/evaluation/CylindricalCompositionProfile/
+**/evaluation/SphericalCompositionProfile/
+**/evaluation/ProjectedCompositionXZ/
+**/output/bit/*.dat
+**/output/bit/*.zip
+**/output/*.zip
+
+# Benchmark generated results
+benchmark/results/
+validation/_runs/
+validation/_output_run/
+validation/_profile_axis_run/
+
+# Python
+__pycache__/
+*.pyc
+
+# Editors / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+validation/_rate_category_limits/
+dist/
+install/

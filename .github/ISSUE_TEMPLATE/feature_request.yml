@@ -1,0 +1,28 @@
+name: Feature request
+description: Propose a scientific or software extension
+title: "[feature] "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: need
+    attributes:
+      label: Scientific/user need
+      description: What problem would this feature solve?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed behavior
+    validations:
+      required: true
+  - type: textarea
+    id: invariants
+    attributes:
+      label: Scientific invariants affected
+      description: Does this change proposal selection, acceptance, common-MCS mapping, topology, Hamiltonian, RNG ordering, or output semantics?
+  - type: textarea
+    id: validation
+    attributes:
+      label: Suggested validation
+      description: What regression or correspondence test should accompany the change?
