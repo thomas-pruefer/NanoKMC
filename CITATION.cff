@@ -10,6 +10,9 @@ authors:
     given-names: Thomas
 version: 0.1.0
 date-released: 2026-09-23
+doi: 10.5281/zenodo.22916915
+repository-code: https://github.com/thomas-pruefer/NanoKMC
+url: https://doi.org/10.5281/zenodo.22916915
 license: BSD-3-Clause
 abstract: >-
   Single-core C++17 research software for lattice kinetic Monte Carlo of

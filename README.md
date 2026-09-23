@@ -1,5 +1,7 @@
 # NanoKMC
 
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22916915.svg)](https://doi.org/10.5281/zenodo.22916915)
+
 NanoKMC is a single-core C++17 research code for **lattice kinetic Monte Carlo (KMC) of conserved nearest-neighbour exchange on periodic FCC lattices**. It provides six solver paths spanning blind proposals, structural active-event filtering, partial filtering, coarse rate categories, and exact finite-rate classes.
 
 The `0.1.0` release contains the validated homogeneous nearest-neighbour model and comparison configuration used in the accompanying NanoKMC study, but the code is intended to remain useful beyond that benchmark. In particular, the Active-Filtered Generic backend separates structural event management from local energetic evaluation so that richer local Hamiltonians can be implemented without rewriting the active-event engine.
@@ -172,6 +174,16 @@ BSD-3-Clause. See [`LICENSE`](LICENSE).
 
 ## Citation and archival
 
-Machine-readable citation metadata are provided in [`CITATION.cff`](CITATION.cff). Tagged research releases are intended to be archived with Zenodo so that the exact software version used in a publication can be cited with a version-specific DOI. After the first Zenodo archive is created, the DOI can be added to the default branch's README and citation metadata without changing the immutable release tag.
+NanoKMC `v0.1.0` is archived on Zenodo with the version-specific DOI:
+
+**https://doi.org/10.5281/zenodo.22916915**
+
+For reproducible scientific work, cite this version-specific DOI when referring to the exact software release used in the study. The Zenodo concept DOI for NanoKMC across all versions is **10.5281/zenodo.22916914**.
+
+Recommended software citation:
+
+> Prüfer, T. (2026). *NanoKMC* (Version v0.1.0) [Computer software]. Zenodo. https://doi.org/10.5281/zenodo.22916915
+
+Machine-readable citation metadata are provided in [`CITATION.cff`](CITATION.cff).
 
 When the accompanying scientific paper receives its final bibliographic record, cite the paper for the method/scientific results and cite the tagged software release when the implementation itself is material to your work.
