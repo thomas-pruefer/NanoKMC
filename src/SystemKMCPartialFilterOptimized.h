@@ -6,8 +6,8 @@
 #include <limits>
 #include <cmath>
 
-// Optimized partial structural-filter reference solver used by the paper
-// benchmark. Its candidate population follows the intermediate binary-alloy
+// Optimized partial structural-filter reference solver for the bundled
+// binary FCC exchange model. Its candidate population follows the intermediate binary-alloy
 // construction described in Appendix A of Bortz, Kalos & Lebowitz (1975):
 // maintain A sites with at least one B neighbour, select one eligible A, then
 // select a neighbour and retain residual structural/Metropolis rejection.

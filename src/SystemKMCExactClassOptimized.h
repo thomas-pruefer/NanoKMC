@@ -7,8 +7,8 @@
 #include <limits>
 #include <cmath>
 
-// Optimized exact finite-rate-class reference solver used by the paper
-// benchmark. The design belongs to the established rejection-free/rate-class
+// Optimized exact finite-rate-class reference solver for the bundled
+// binary FCC exchange model. The design belongs to the established rejection-free/rate-class
 // lineage: BKL/n-fold (1975), active-bond exact classes in Sadiq (1984), and
 // finite-class list implementations such as Schulze (2002).
 // Sadiq DOI: 10.1016/0021-9991(84)90028-7

@@ -26,7 +26,7 @@ The implementation evaluates the local binary NN energy class directly from neig
 
 **Clock:** `6/B` common MCS per selected active bond.
 
-**Bundled Hamiltonian:** symmetric homogeneous NN model, equal-species bond energy `-Ea/2`, unlike-species bond energy `0`. This default works for two or more species. The ordered environment interface can be overridden for richer local Hamiltonians.
+**Bundled Hamiltonian:** symmetric homogeneous NN model, equal-species bond energy `-Ea/2`, unlike-species bond energy `0`. The evaluator and structural interface can represent multiple species, although the bundled homogeneous initializer currently populates only species 0/1. The ordered environment interface can be overridden for richer local Hamiltonians.
 
 ## `KMCActiveFilteredBinaryNN`
 
@@ -38,7 +38,7 @@ The implementation evaluates the local binary NN energy class directly from neig
 
 **Scope:** exactly two species, symmetric homogeneous NN model. The implementation uses eight precomputed Metropolis factors for the FCC exchange benchmark.
 
-This is the performance-oriented NanoKMC implementation used as the primary Active-Filtered realization for the paper's binary benchmark.
+This is the performance-oriented binary specialization of the Active-Filtered method.
 
 ## `KMCPartialFilterOptimized`
 
@@ -60,7 +60,7 @@ The bundled binary FCC NN benchmark has eight exact Metropolis classes. The rele
 
 A category is selected with weight `N_g p_hat_g`, a bond is selected uniformly inside it, and only then is the selected bond's exact class evaluated. The bond executes with residual probability `p_exact/p_hat_g`. Thus the solver maintains more energetic preselection information than NanoKMC Active-Filtered but less than `KMCExactClassOptimized`, and it deliberately retains rejection.
 
-The common-MCS increment is `6/Qhat`, with `Qhat = sum_g N_g p_hat_g`. Supported `RateCategoryCount` values are `1`, `2`, `4`, and `8`; `4` is the frozen comparison setting. `M=1` is the single-majorant limit, while `M=8` becomes the exact-class rejection-free limit for the bundled eight-class model.
+The common-MCS increment is `6/Qhat`, with `Qhat = sum_g N_g p_hat_g`. Supported `RateCategoryCount` values are `1`, `2`, `4`, and `8`; `4` is the default validated comparison setting. `M=1` is the single-majorant limit, while `M=8` becomes the exact-class rejection-free limit for the bundled eight-class model.
 
 This is a controlled literature/reference architecture, not a NanoKMC method.
 

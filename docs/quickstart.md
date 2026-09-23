@@ -1,6 +1,6 @@
 # NanoKMC quick start
 
-This guide builds NanoKMC, runs the release tests, and starts a small Active-Filtered FCC Kawasaki example.
+This guide builds NanoKMC, runs the release tests, and starts a small Active-Filtered FCC exchange example.
 
 ## 1. Build
 
@@ -14,7 +14,7 @@ scripts\windows\build_and_test.bat
 
 This creates `build\nanokmc.exe` and runs the CTest suite.
 
-For the compiler policy used in the paper benchmark:
+For the frozen compiler policy used in the accompanying manuscript benchmark:
 
 ```text
 scripts\windows\build_and_test.bat paper
@@ -30,7 +30,7 @@ cmake --build build
 ctest --test-dir build --output-on-failure
 ```
 
-Paper-policy build:
+Manuscript benchmark-policy build:
 
 ```bash
 cmake -S . -B build-paper -DCMAKE_BUILD_TYPE=Release -DNANOKMC_PAPER_BUILD=ON

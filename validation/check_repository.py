@@ -72,6 +72,7 @@ def main() -> int:
         "validation/_output_run",
         "validation/_profile_axis_run",
         "validation/_rate_category_limits",
+        "validation/_input_validation",
     ]
     for rel in generated_validation_dirs:
         if (ROOT / rel).exists():

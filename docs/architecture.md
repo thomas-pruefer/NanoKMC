@@ -23,7 +23,7 @@ SystemClass
               +-- SystemKMCPartialFilterOptimized
 ```
 
-`SystemKMCHomogenous` supplies the shared homogeneous benchmark parameters and incremental common-MCS interface. The six public `SystemID` values are the leaf solvers listed in the README.
+`SystemKMCHomogenous` supplies the shared homogeneous FCC-model parameters and incremental common-MCS interface. The six public `SystemID` values are the leaf solvers listed in the README.
 
 ## Active-Filtered structural engine
 
@@ -43,7 +43,7 @@ No derived acceptance backend can bias structural selection through this interfa
 
 For each fixed lattice site `q`, the engine stores the 12 NN site indices. Runtime neighbor lookup therefore becomes a contiguous integer lookup rather than repeated periodic-coordinate arithmetic.
 
-The optimization principle is not specific to FCC. The current release simply instantiates the FCC topology used by the paper.
+The optimization principle is not specific to FCC. The current release simply instantiates the FCC topology used by the bundled binary model.
 
 ## Differential active-set refresh
 
@@ -55,11 +55,11 @@ The number 23 is FCC-specific; differential local refresh is not.
 
 ### Generic
 
-`SystemKMCActiveFilteredGeneric` gathers an ordered `LocalPairEnvironment` after a bond is selected. The structure contains endpoint species plus all directional NN species around both endpoints. The bundled evaluator applies the paper's symmetric homogeneous NN Hamiltonian, but `AcceptanceProbabilityFromEnvironment(...)` is virtual so a future system can use direction-dependent, motif-dependent or otherwise richer local physics without changing structural filtering.
+`SystemKMCActiveFilteredGeneric` gathers an ordered `LocalPairEnvironment` after a bond is selected. The structure contains endpoint species plus all directional NN species around both endpoints. The bundled evaluator applies the symmetric homogeneous NN Hamiltonian, but `AcceptanceProbabilityFromEnvironment(...)` is virtual so a future system can use direction-dependent, motif-dependent or otherwise richer local physics without changing structural filtering.
 
 ### BinaryNN
 
-`SystemKMCActiveFilteredBinaryNN` assumes exactly two species and the symmetric homogeneous NN Hamiltonian used by the paper. It stores one byte per fixed site: the number of species-1 nearest neighbours. That count is updated locally after an accepted exchange. The selected pair's exact Metropolis factor is then obtained through integer arithmetic and an eight-entry precomputed probability table.
+`SystemKMCActiveFilteredBinaryNN` assumes exactly two species and the symmetric homogeneous NN Hamiltonian used by the bundled binary model. It stores one byte per fixed site: the number of species-1 nearest neighbours. That count is updated locally after an accepted exchange. The selected pair's exact Metropolis factor is then obtained through integer arithmetic and an eight-entry precomputed probability table.
 
 The BinaryNN descriptor is used only after structural selection. It is not an energetic preselection catalogue.
 
@@ -71,7 +71,7 @@ The BinaryNN descriptor is used only after structural selection. It is not an en
 
 `SystemKMCRateCategoryOptimized` shares only the fixed-topology/eight-rate utility base with the exact-class solver and occupies the rate-informed intermediate region between structural-only Active-Filtered selection and exact finite-rate classes. It stores each active bond only in one **coarse** category. Categories are selected with weight `N_g * p_hat_g`, a member is selected uniformly, and the selected bond is accepted with `p_exact / p_hat_g`. The default four-category partition of the eight binary FCC Metropolis classes is `{0,1}`, `{2,3}`, `{4,5}`, `{6,7}`.
 
-The common-MCS increment is `6/Qhat`, where `Qhat = sum_g N_g p_hat_g`. `RateCategoryCount=1,2,4,8` is supported for controlled validation; the release/paper setting is `4`.
+The common-MCS increment is `6/Qhat`, where `Qhat = sum_g N_g p_hat_g`. `RateCategoryCount=1,2,4,8` is supported for controlled validation; the default validated setting is `4`.
 
 ## Provenance boundary
 

@@ -7,10 +7,11 @@
 // Candidate filtering, selection, timing and active-list updates are inherited
 // unchanged from SystemKMCActiveFilteredBase. This backend reconstructs the
 // ordered nearest-neighbour environment only after a candidate has been
-// selected. The bundled default Hamiltonian is the symmetric homogeneous model
-// used by the paper: an equal-species NN bond contributes -Ea/2 and an unlike
-// bond contributes 0. The implementation works for two or more species under
-// that symmetric model.
+// selected. The bundled default Hamiltonian is a symmetric homogeneous model:
+// an equal-species NN bond contributes -Ea/2 and an unlike bond contributes 0.
+// The local-environment representation preserves arbitrary species labels; the
+// bundled initializer/examples are binary, while derived models can provide
+// true multi-species initialization and acceptance physics.
 //
 // More complex local Hamiltonians can derive from this class and override
 // AcceptanceProbabilityFromEnvironment() without changing the Active-Filtered

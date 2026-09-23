@@ -36,5 +36,6 @@ __pycache__/
 .DS_Store
 Thumbs.db
 validation/_rate_category_limits/
+validation/_input_validation/
 dist/
 install/

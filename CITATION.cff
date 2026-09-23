@@ -1,27 +1,31 @@
 cff-version: 1.2.0
 title: NanoKMC
 message: >-
-  If you use the NanoKMC Active-Filtered method in scientific work, please
-  cite the accompanying NanoKMC paper once its final bibliographic record is
-  available, and cite this software release when appropriate.
+  If you use NanoKMC in scientific work, please cite this software release.
+  When the accompanying NanoKMC method paper is available, cite that paper as
+  well when referring to the method or scientific results.
 type: software
 authors:
   - family-names: Prüfer
     given-names: Thomas
 version: 0.1.0
-date-released: 2026-09-21
+date-released: 2026-09-23
 license: BSD-3-Clause
 abstract: >-
-  Single-core C++17 research implementation of the NanoKMC Active-Filtered
-  lattice kinetic Monte Carlo formulation and controlled classical,
-  partial-filter, rate-category, and exact-class reference solvers for the
-  binary FCC Kawasaki-exchange benchmark.
+  Single-core C++17 research software for lattice kinetic Monte Carlo of
+  conserved nearest-neighbour exchange on periodic FCC lattices. NanoKMC
+  provides six solver architectures spanning blind proposals, structural
+  active-event filtering, partial filtering, coarse rate categories, and exact
+  finite-rate classes. The release includes a validated homogeneous binary
+  nearest-neighbour model and an extensible Active-Filtered local-environment
+  backend for richer local physics and multi-species extensions.
 keywords:
   - kinetic Monte Carlo
   - lattice kinetic Monte Carlo
   - Kawasaki dynamics
-  - binary alloy
+  - FCC lattice
   - active-event filtering
+  - finite-rate classes
   - Monte Carlo
   - research software
   - reproducibility

@@ -4,7 +4,7 @@ Recommended reading order:
 
 1. [`quickstart.md`](quickstart.md) — build, validate, and run a first simulation.
 2. [`reproducibility.md`](reproducibility.md) — reproducibility boundary and paper-build policy.
-3. [`physics-model.md`](physics-model.md) — benchmark lattice and Hamiltonian.
+3. [`physics-model.md`](physics-model.md) — bundled lattice and Hamiltonian.
 4. [`solvers.md`](solvers.md) — six public solver architectures.
 5. [`architecture.md`](architecture.md) — implementation structure.
 6. [`input-output.md`](input-output.md) — run-directory format and parameters.

@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 option(NANOKMC_PAPER_BUILD
-       "Use the compiler settings frozen for the NanoKMC paper benchmark"
+       "Use the compiler settings frozen for the accompanying manuscript benchmark"
        OFF)
 option(NANOKMC_WARNINGS
        "Enable useful compiler warnings for NanoKMC sources"
@@ -41,12 +41,7 @@ target_compile_definitions(nanokmc PRIVATE
 if (NANOKMC_WARNINGS)
     if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang")
         target_compile_options(nanokmc PRIVATE
-            -Wall -Wextra -Wpedantic
-            -Wno-unused-parameter
-            -Wno-unused-variable
-            -Wno-unused-but-set-variable
-            -Wno-sign-compare
-            -Wno-parentheses)
+            -Wall -Wextra -Wpedantic)
     elseif (MSVC)
         target_compile_options(nanokmc PRIVATE /W3)
     endif()
@@ -54,7 +49,7 @@ endif()
 
 if (CMAKE_CXX_COMPILER_ID MATCHES "GNU|Clang" AND NANOKMC_PAPER_BUILD)
     # Frozen single-core benchmark setting. Keep this explicit so a CMake
-    # Release default such as -O3 does not silently change the paper build.
+    # Release default such as -O3 does not silently change the manuscript benchmark build.
     target_compile_options(nanokmc PRIVATE -O1)
     target_compile_definitions(nanokmc PRIVATE NDEBUG)
 elseif (MSVC AND NANOKMC_PAPER_BUILD)
@@ -93,6 +88,11 @@ if (BUILD_TESTING)
             NAME nanokmc_rate_category_limits
             COMMAND ${Python3_EXECUTABLE}
                     ${CMAKE_CURRENT_SOURCE_DIR}/validation/run_rate_category_limits.py
+                    --exe $<TARGET_FILE:nanokmc>)
+        add_test(
+            NAME nanokmc_input_validation
+            COMMAND ${Python3_EXECUTABLE}
+                    ${CMAKE_CURRENT_SOURCE_DIR}/validation/run_input_validation.py
                     --exe $<TARGET_FILE:nanokmc>)
     endif()
 endif()

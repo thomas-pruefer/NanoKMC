@@ -62,14 +62,6 @@ void PerpendicularLengths(const std::string& axis, int lx1, int ly1, int lz1,
 
 } // namespace
 
-double SystemClass::FitFunction(double x) {
-    double r, dpart, xx, yy, zz, r1;
-
-    dpart=DistributionFunction(x, ly/2, lz/2, 0);
-    return dpart;
-}
-
-
 void SystemClass::CalcClustDist(int s, int sn) {
     long ncid;
     int clusteratoms, xx, yy, zz, at, i, k, nclusterbonds;
@@ -113,20 +105,20 @@ void SystemClass::CalcClustDist(int s, int sn) {
                             x_minus = (lx+atx[i]) & lx, y_minus = (ly+aty[i]) & ly, z_minus = (lz+atz[i]) & lz,
                             x__plus = ( atx[i]+1) & lx, y__plus = ( aty[i]+1) & ly, z__plus = ( atz[i]+1) & lz,
                             x__zero =   atx[i]        , y__zero =   aty[i]        , z__zero =   atz[i]        ;
-                            n=0;
-                            if ((this->*GetSpecies)(x_minus,y__zero,z__plus)==s) {nclusterbonds++; n=1;}
-                            if ((this->*GetSpecies)(x__zero,y__plus,z__plus)==s) {nclusterbonds++; n=1;}
-                            if ((this->*GetSpecies)(x__plus,y__zero,z__plus)==s) {nclusterbonds++; n=1;}
-                            if ((this->*GetSpecies)(x__zero,y_minus,z__plus)==s) {nclusterbonds++; n=1;}
-                            if ((this->*GetSpecies)(x_minus,y__zero,z_minus)==s) {nclusterbonds++; n=1;}
-                            if ((this->*GetSpecies)(x__zero,y_minus,z_minus)==s) {nclusterbonds++; n=1;}
-                            if ((this->*GetSpecies)(x__zero,y__plus,z_minus)==s) {nclusterbonds++; n=1;}
-                            if ((this->*GetSpecies)(x__plus,y__zero,z_minus)==s) {nclusterbonds++; n=1;}
-                            if ((this->*GetSpecies)(x_minus,y_minus,z__zero)==s) {nclusterbonds++; n=1;}
-                            if ((this->*GetSpecies)(x_minus,y__plus,z__zero)==s) {nclusterbonds++; n=1;}
-                            if ((this->*GetSpecies)(x__plus,y_minus,z__zero)==s) {nclusterbonds++; n=1;}
-                            if ((this->*GetSpecies)(x__plus,y__plus,z__zero)==s) {nclusterbonds++; n=1;}
-                            if (n==1) {
+                            bool hasSameSpeciesNeighbor = false;
+                            if ((this->*GetSpecies)(x_minus,y__zero,z__plus)==s) {nclusterbonds++; hasSameSpeciesNeighbor=true;}
+                            if ((this->*GetSpecies)(x__zero,y__plus,z__plus)==s) {nclusterbonds++; hasSameSpeciesNeighbor=true;}
+                            if ((this->*GetSpecies)(x__plus,y__zero,z__plus)==s) {nclusterbonds++; hasSameSpeciesNeighbor=true;}
+                            if ((this->*GetSpecies)(x__zero,y_minus,z__plus)==s) {nclusterbonds++; hasSameSpeciesNeighbor=true;}
+                            if ((this->*GetSpecies)(x_minus,y__zero,z_minus)==s) {nclusterbonds++; hasSameSpeciesNeighbor=true;}
+                            if ((this->*GetSpecies)(x__zero,y_minus,z_minus)==s) {nclusterbonds++; hasSameSpeciesNeighbor=true;}
+                            if ((this->*GetSpecies)(x__zero,y__plus,z_minus)==s) {nclusterbonds++; hasSameSpeciesNeighbor=true;}
+                            if ((this->*GetSpecies)(x__plus,y__zero,z_minus)==s) {nclusterbonds++; hasSameSpeciesNeighbor=true;}
+                            if ((this->*GetSpecies)(x_minus,y_minus,z__zero)==s) {nclusterbonds++; hasSameSpeciesNeighbor=true;}
+                            if ((this->*GetSpecies)(x_minus,y__plus,z__zero)==s) {nclusterbonds++; hasSameSpeciesNeighbor=true;}
+                            if ((this->*GetSpecies)(x__plus,y_minus,z__zero)==s) {nclusterbonds++; hasSameSpeciesNeighbor=true;}
+                            if ((this->*GetSpecies)(x__plus,y__plus,z__zero)==s) {nclusterbonds++; hasSameSpeciesNeighbor=true;}
+                            if (hasSameSpeciesNeighbor) {
                                 surfaceatoms[ncid]++;
                             }
                         }
@@ -389,10 +381,6 @@ void SystemClass::EvalClustDist(unsigned long long n) {
 
 
 void SystemClass::count_erase(unsigned long long aa, unsigned long long bb, unsigned long long cc, int s, int sn){
-    unsigned long long	x_minus = (lx+aa) & lx, y_minus = (ly+bb) & ly, z_minus = (lz+cc) & lz,
-		x__plus = ( aa+1) & lx, y__plus = ( bb+1) & ly, z__plus = ( cc+1) & lz,
-		x__zero =   aa        , y__zero =   bb        , z__zero =   cc        ;
-
     if ((this->*GetSpecies)(aa, bb, cc)==s) {
         (this->*SetSpecies)(aa, bb, cc, sn);
         kk++;
@@ -525,8 +513,7 @@ void SystemClass::WriteOnefileRasmol (std::string rfile) {
 
     std::fstream outputfile;
     std::fstream rasmolscript;
-    int i, j, N, s, f, ReducedAtomNumber, NPlots;
-    std::string dummystring;
+    int i, s, f, ReducedAtomNumber, NPlots;
     const char* st1 = "OnefileRasmol";
     EnsureEvaluationDirectory(st1);
 
@@ -546,12 +533,8 @@ void SystemClass::WriteOnefileRasmol (std::string rfile) {
         f=CheckFreedom (xpr[i], ypr[i], zpr[i]);
         s=(this->*GetSpecies)(xpr[i], ypr[i], zpr[i]);
         if (RasmolSpeciesPlot[s]==1) {
-            if (f<(13-r) & f>=r) {
-//                if (!(f<1 & NPlots==1)) {
-//                    if (xpr[i]>60 & xpr[i]<180) {
+            if (f < (13-r) && f >= r) {
                         ReducedAtomNumber++;
-//                    }
-//                }
             }
         }
     }
@@ -561,11 +544,9 @@ void SystemClass::WriteOnefileRasmol (std::string rfile) {
 
     for (i=0;i<TotalAtoms;i++) {
         f=CheckFreedom (xpr[i], ypr[i], zpr[i]);
-        if (f<(13-r) & f>=r) {
+        if (f < (13-r) && f >= r) {
             s=(this->*GetSpecies)(xpr[i], ypr[i], zpr[i]);
             if (RasmolSpeciesPlot[s]==1) {
-//                if (!(f<1 & NPlots==1)) {
-//                    if (xpr[i]>60 & xpr[i]<180) {
                     outputfile << SpeciesName[s] << "	 ";
                     outputfile << xpr[i] << "	 ";
                     outputfile << ypr[i] << "	 ";
@@ -576,8 +557,6 @@ void SystemClass::WriteOnefileRasmol (std::string rfile) {
                         outputfile << s;
                     }
                     outputfile << std::endl;
-//                    }
-//                }
             }
         }
     }
@@ -609,8 +588,7 @@ void SystemClass::WriteBlenderSimple (std::string rfile) {
 
     std::fstream outputfile;
     std::fstream rasmolscript;
-    int i, j, N, s, f, ReducedAtomNumber, NPlots;
-    std::string dummystring;
+    int i, s, f, ReducedAtomNumber, NPlots;
     const char* st1 = "BlenderSimple";
     EnsureEvaluationDirectory(st1);
 
@@ -631,11 +609,7 @@ void SystemClass::WriteBlenderSimple (std::string rfile) {
         s=(this->*GetSpecies)(xpr[i], ypr[i], zpr[i]);
         if (RasmolSpeciesPlot[s]==1) {
             if ((f<=(12-r))) {
-//                if (!(f<0 & NPlots==1)) {
-//                    if (xpr[i]>60 & xpr[i]<180) {
                         ReducedAtomNumber++;
-//                    }
-//                }
             }
         }
     }
@@ -648,33 +622,6 @@ void SystemClass::WriteBlenderSimple (std::string rfile) {
         if ((f<=(12-r)) ) {
             s=(this->*GetSpecies)(xpr[i], ypr[i], zpr[i]);
             if (RasmolSpeciesPlot[s]==1) {
-//                if (!(f<0 & NPlots==1)) {
-//                    if (xpr[i]>60 & xpr[i]<180) {
-//                    if (13-f==1) {
-//                        outputfile << "H" << "	 ";
-//                    } else if (13-f==2) {
-//                        outputfile << "He" << "	 ";
-//                    } else if (13-f==3) {
-//                        outputfile << "Li" << "	 ";
-//                    } else if (13-f==4) {
-//                        outputfile << "Be" << "	 ";
-//                    } else if (13-f==5) {
-//                        outputfile << "B" << "	 ";
-//                    } else if (13-f==6) {
-//                        outputfile << "C" << "	 ";
-//                    } else if (13-f==7) {
-//                        outputfile << "N" << "	 ";
-//                    } else if (13-f==8) {
-//                        outputfile << "O" << "	 ";
-//                    } else if (13-f==9) {
-//                        outputfile << "F" << "	 ";
-//                    } else if (13-f==10) {
-//                        outputfile << "Ne" << "	 ";
-//                    } else if (13-f==11) {
-//                        outputfile << "Na" << "	 ";
-//                    } else if (13-f==12) {
-//                        outputfile << "Mg" << "	 ";
-//                    }
 
                     outputfile << "Si" << "	 ";
                     outputfile << xpr[i] << "	 ";
@@ -686,8 +633,6 @@ void SystemClass::WriteBlenderSimple (std::string rfile) {
                         outputfile << s;
                     }
                     outputfile << std::endl;
-//                    }
-//                }
             }
         }
     }
@@ -716,9 +661,7 @@ void SystemClass::WriteBlenderSimple (std::string rfile) {
 void SystemClass::WriteCSV (std::string rfile) {
 
     std::fstream outputfile;
-    std::fstream rasmolscript;
-    int i, j, N, s, f, ReducedAtomNumber;
-    std::string dummystring;
+    int i, s;
     const char* st1 = "CSV";
     EnsureEvaluationDirectory(st1);
 
@@ -730,7 +673,6 @@ void SystemClass::WriteCSV (std::string rfile) {
     outputfile.open(st2, std::ios::out);
 
     for (i=0;i<TotalAtoms;i++) {
-        f=CheckFreedom (xpr[i], ypr[i], zpr[i]);
         s=(this->*GetSpecies)(xpr[i], ypr[i], zpr[i]);
         if (RasmolSpeciesPlot[s]==1) {
             outputfile << xpr[i] << ";";

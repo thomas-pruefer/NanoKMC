@@ -1,10 +1,14 @@
 #include "SystemClass.h"
 
+#include <charconv>
+#include <cstdlib>
+#include <system_error>
+
 std::mt19937_64 SystemClass::RandomEngine;
 bool SystemClass::RandomEngineSeeded = false;
-unsigned long long SystemClass::RandomEngineSeed = 0;
+std::uint64_t SystemClass::RandomEngineSeed = 0;
 
-void SystemClass::InitializeRandom(unsigned long long seed) {
+void SystemClass::InitializeRandom(std::uint64_t seed) {
     // A NanoKMC process normally uses one Seed value.  Keep the engine state
     // across System object re-creation so segmented calculations continue the
     // same random stream.
@@ -15,7 +19,7 @@ void SystemClass::InitializeRandom(unsigned long long seed) {
     }
 }
 
-unsigned long long SystemClass::RandomIndex(unsigned long long upperExclusive) {
+std::uint64_t SystemClass::RandomIndex(std::uint64_t upperExclusive) {
     if (upperExclusive <= 1) return 0;
 
     // Rejection removes modulo bias while retaining one raw RNG call in the
@@ -58,7 +62,7 @@ SystemClass::SystemClass() {
 
 SystemClass::~SystemClass() {
 
-    int i,j,k, s;
+    int i, j, s;
 
     delete[] xpr;
     delete[] ypr;
@@ -107,8 +111,6 @@ void SystemClass::Init(long long* SystemInit, int ColumnParam) {
     tstart = clock();
     MCStepAccount = 0.0;
     EvolutionWallSecondsCumulative = 0.0;
-    temp1=0;
-    temp2=0;
     // Initialize system
     StepCount=SystemInit[0];
     BondNumber=SystemInit[1];
@@ -133,21 +135,16 @@ void SystemClass::Init(long long* SystemInit, int ColumnParam) {
 
     // Set species number
     AtomNumber=new long [NSpecies];
-    if (NSpecies<3) {
+    if (NSpecies <= 2) {
         SetSpecies=&SystemClass::SetSpecies2S;
         GetSpecies=&SystemClass::GetSpecies2S;
-    } else if (NSpecies<5) {
+    } else if (NSpecies <= 4) {
         SetSpecies=&SystemClass::SetSpecies4S;
         GetSpecies=&SystemClass::GetSpecies4S;
-    } else if (NSpecies<=16) {
+    } else {
+        // InputSystem() validates NSpecies <= 16.
         SetSpecies=&SystemClass::SetSpecies16S;
         GetSpecies=&SystemClass::GetSpecies16S;
-    } else if (NSpecies>16) {
-        SetSpecies=&SystemClass::SetSpeciesNS;
-        GetSpecies=&SystemClass::GetSpeciesNS;
-    } else {
-        logging("Too many Species. Please maximal 18446744073709551615!");
-        exit(0);
     }
 
     // calculate dimensions
@@ -157,13 +154,10 @@ void SystemClass::Init(long long* SystemInit, int ColumnParam) {
     lx1 = lx + LongOne;
     ly1 = ly + LongOne;
     lz1 = lz + LongOne;
-    mx = lx - LongOne;
-    my = ly - LongOne;
-    mz = lz - LongOne;
     cubx = LongOne << (nx-LongTwo);
     cuby = LongOne << (ny-LongTwo);
     cubz = LongOne << (nz-LongTwo);
-    TotalAtoms=pow(2,nx)*pow(2,ny)*pow(2,nz)/2;
+    TotalAtoms = static_cast<long>(1ULL << (nx + ny + nz - 1));
     txtstream << "nx: \t " << nx; logging(txtstream.str());
     txtstream << "ny: \t " << ny; logging(txtstream.str());
     txtstream << "nz: \t " << nz; logging(txtstream.str());
@@ -211,8 +205,6 @@ void SystemClass::Init(long long* SystemInit, int ColumnParam) {
         // Loading existing bitfile
         LoadBitfile(GetBitfileName(StepCount));
 
-        //StepCount=0;
-        //StepData[0]=0;
         CountAtoms();
 
     } else {
@@ -284,18 +276,11 @@ void SystemClass::SetSpecies2S (int x, int y, int z, unsigned long long s) {
         case   1: git[xyz2cubxyz2S(x)][xyz2cubxyz2S(y)][xyz2cubxyz2S(z)]=(git[xyz2cubxyz2S(x )][xyz2cubxyz2S(y )][xyz2cubxyz2S(z )]|((LongOne<<xyz2bi2S( x, y, z)))); break;}
 }
 
-void SystemClass::SetSpeciesNS (int x, int y, int z, unsigned long long s) {
-    git[x][y][z]=s;
-}
-
 void SystemClass::InputSystem() {
-    int k, j, i, s;
+    int s;
 
-    std::string str,inputvalue[4];
-    std::string inputs[4], txt;
-    int seedInput=Str2Int(InputParam("Seed", "nanokmc.in"));
-    if (seedInput < 0) seedInput=1;
-    InitializeRandom(static_cast<unsigned long long>(seedInput));
+    const std::uint64_t seedInput = Str2UInt64(InputParam("Seed", "nanokmc.in"));
+    InitializeRandom(seedInput);
     txtstream << "Random engine: mt19937_64, Seed: " << seedInput; logging(txtstream.str());
     kT=Str2Double(InputParam("kT", "nanokmc.in"));
     lc=Str2Double(InputParam("lc", "nanokmc.in"));
@@ -309,6 +294,30 @@ void SystemClass::InputSystem() {
     if (nx < 0) nx=Str2Int(InputParam("nx", "nanokmc.in"));
     if (ny < 0) ny=Str2Int(InputParam("ny", "nanokmc.in"));
     if (nz < 0) nz=Str2Int(InputParam("nz", "nanokmc.in"));
+
+    if (NSpecies < 2 || NSpecies > 16) {
+        std::cerr << "NSpecies must be between 2 and 16 for the current lattice "
+                     "storage implementation." << std::endl;
+        std::exit(2);
+    }
+    if (nx < 2 || ny < 2 || nz < 2) {
+        std::cerr << "knx, kny and knz must each be >= 2 for the packed FCC "
+                     "lattice representation." << std::endl;
+        std::exit(2);
+    }
+    if (nx >= std::numeric_limits<int>::digits ||
+        ny >= std::numeric_limits<int>::digits ||
+        nz >= std::numeric_limits<int>::digits) {
+        std::cerr << "knx, kny and knz are too large for the integer coordinate "
+                     "representation on this platform." << std::endl;
+        std::exit(2);
+    }
+    const int totalAtomExponent = nx + ny + nz - 1;
+    if (totalAtomExponent >= std::numeric_limits<long>::digits) {
+        std::cerr << "Requested FCC lattice is too large for TotalAtoms on this "
+                     "platform." << std::endl;
+        std::exit(2);
+    }
 
     txtstream << "NSpecies: \t" << NSpecies; logging(txtstream.str());
     SpeciesName= new std::string [NSpecies];
@@ -351,8 +360,8 @@ void SystemClass::InputSystem() {
 
 std::string SystemClass::GetBitfileName(unsigned long n) {
     char s[255];
-    char jst[50]; int nn;
-    nn = sprintf (jst, "%lu", n);
+    char jst[50];
+    sprintf(jst, "%lu", n);
     strcpy(s, "");
 
     if(n==0) strcat(s, "00000000");
@@ -367,9 +376,7 @@ std::string SystemClass::GetBitfileName(unsigned long n) {
 }
 
 void SystemClass::CountAtoms() {
-    int i, j, k, l, n, xx, yy, zz;
-    double rnd, x, y, z;
-    std::string txt;
+    int i, j, k, l, n;
 
     // make xyz arrays
     xpr = new int [TotalAtoms];
@@ -410,7 +417,7 @@ void SystemClass::CountAtoms() {
 
 void SystemClass::LoadBitfile(std::string Filename) {
     int i,j,k;
-    char FilePath[255], cdln1[255];
+    char cdln1[255];
     std::fstream bitfile;
 
     // unpack file
@@ -446,9 +453,8 @@ void SystemClass::LoadBitfile(std::string Filename) {
 }
 
 void SystemClass::DistributeAtoms () {
-    int i, j, k, l, n, xx, yy, zz;
+    int i, j, k, l, n;
     double rnd, x, y, z;
-    std::string txt;
 
     // make xyz arrays
     xpr = new int [TotalAtoms];
@@ -547,9 +553,8 @@ void SystemClass::ExchangeSites(int x, int y, int z, int xn, int yn, int zn, int
 }
 
 void SystemClass::RunMC(long long* in) {
-    int n, i, j, k;
-    std::string txt;
-    n=in[0];
+    int i;
+    const long long n = in[0];
     RecordCount=in[2];
     NJumps=0;
     NAccepted=0;
@@ -698,10 +703,9 @@ void SystemClass::SaveBitFile(unsigned long n){
     int i,j,k;
     char jst[50];
     char st2[255], cdln3[255];
-    int nn;
     std::fstream bitfile;
 
-    nn = sprintf (jst, "%lu", n);
+    sprintf(jst, "%lu", n);
     strcpy(st2, "");
 
     if(n==0) strcat(st2, "00000000");
@@ -740,7 +744,7 @@ void SystemClass::InitSubSys() {
 
 }
 
-void SystemClass::EvalSysStep(unsigned long long n) {
+void SystemClass::EvalSysStep(unsigned long long) {
 
 }
 
@@ -761,7 +765,7 @@ double SystemClass::Str2Double (const std::string &str) {
     double n;
     double m;
     ss >> n;
-    if (str.find("D")!=-1) {
+    if (str.find("D") != std::string::npos) {
         m=Str2Double(str.substr(str.find("D")+1,str.find("D")+2));
         n=n*pow(10,m);
     }
@@ -773,11 +777,29 @@ int SystemClass::Str2Int (const std::string &str) {
     int n;
     double m;
     ss >> n;
-    if (str.find("D")!=-1) {
+    if (str.find("D") != std::string::npos) {
         m=Str2Int(str.substr(str.find("D")+1,str.find("D")+2));
         n=n*pow(10,m);
     }
     return n;
+}
+
+std::uint64_t SystemClass::Str2UInt64(const std::string &str) {
+    if (str.empty() || str.front() == '-') {
+        std::cerr << "Expected a non-negative uint64_t value, got: " << str
+                  << std::endl;
+        std::exit(2);
+    }
+
+    std::uint64_t value = 0;
+    const char* begin = str.data();
+    const char* end = begin + str.size();
+    const auto result = std::from_chars(begin, end, value, 10);
+    if (result.ec != std::errc() || result.ptr != end) {
+        std::cerr << "Invalid uint64_t value: " << str << std::endl;
+        std::exit(2);
+    }
+    return value;
 }
 
 std::string SystemClass::Int2Str (int n) {
@@ -790,38 +812,34 @@ std::string SystemClass::Int2Str (int n) {
 
 std::string SystemClass::InputParam(std::string paramname, std::string filename) {
     std::string line;
-    std::string param = "-1";
-    std::string key = paramname + "=";
+    const std::string key = paramname + "=";
 
     std::fstream inputfile(filename.c_str(), std::ios::in);
     while (std::getline(inputfile, line)) {
-        std::size_t j = line.find(key);
-        if (j == std::string::npos) continue;
+        const std::size_t first = line.find_first_not_of(" \t\r\n");
+        if (first == std::string::npos) continue;
+        if (line.compare(first, 2, "//") == 0) continue;
+        if (line.compare(first, key.size(), key) != 0) continue;
 
-        std::size_t eq = line.find("=", j);
-        std::size_t semi = line.find(";", eq);
-        if (eq == std::string::npos) continue;
+        const std::size_t valueBegin = first + key.size();
+        std::size_t semi = line.find(";", valueBegin);
         if (semi == std::string::npos) semi = line.size();
+        std::string param = line.substr(valueBegin, semi - valueBegin);
 
-        param = line.substr(eq + 1, semi - eq - 1);
-
-        // trim whitespace
-        std::size_t first = param.find_first_not_of(" \t\r\n");
-        std::size_t last = param.find_last_not_of(" \t\r\n");
-        if (first == std::string::npos) {
-            param = "";
+        const std::size_t valueFirst = param.find_first_not_of(" \t\r\n");
+        const std::size_t valueLast = param.find_last_not_of(" \t\r\n");
+        if (valueFirst == std::string::npos) {
+            param.clear();
         } else {
-            param = param.substr(first, last - first + 1);
+            param = param.substr(valueFirst, valueLast - valueFirst + 1);
         }
 
-        // strip optional quotes
         if (param.size() >= 2 && param.front() == '"' && param.back() == '"') {
             param = param.substr(1, param.size() - 2);
         }
-        break;
+        return param;
     }
-    inputfile.close();
-    return param;
+    return "-1";
 }
 
 void SystemClass::Zip() {

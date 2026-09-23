@@ -13,6 +13,7 @@
 #include <iomanip>
 #include <random>
 #include <limits>
+#include <cstdint>
 
 class SystemClass {
 
@@ -32,15 +33,17 @@ class SystemClass {
         long long BenchmarkProbabilityEvaluationCount;
         long long BenchmarkInactiveRejectedCount;
         long long BenchmarkActiveTableUpdateCount;
-        long TotalAtoms, NAtoms, *AtomNumber;
-        unsigned long long *** git, StepCount, LongOne=1, LongTwo=2, LongThree=3, LongZero=0, Long4=4, Long15=15, Long7=7, LongN=std::numeric_limits<unsigned long long>::max();
+        long TotalAtoms, *AtomNumber;
+        // Compact packed lattice storage. Species are stored per fixed FCC site;
+        // the packing density depends on NSpecies (1, 2 or 4 bits per site).
+        unsigned long long *** git;
+        unsigned long long StepCount;
+        unsigned long long LongOne=1, LongTwo=2, LongThree=3, LongZero=0,
+                           Long15=15, LongN=std::numeric_limits<unsigned long long>::max();
         long long *StepData;
         void logging(std::string txt);
-        int diff;
-        long long rndCalls;
 
     protected:
-        virtual double FitFunction(double x);
         virtual void JumpAttempt() = 0;
         virtual double MCSIncrementPerAttempt() const = 0;
         virtual bool RecomputeMCSIncrementEveryAttempt() const;
@@ -49,9 +52,9 @@ class SystemClass {
         // not restart the random stream.
         static std::mt19937_64 RandomEngine;
         static bool RandomEngineSeeded;
-        static unsigned long long RandomEngineSeed;
-        void InitializeRandom(unsigned long long seed);
-        unsigned long long RandomIndex(unsigned long long upperExclusive);
+        static std::uint64_t RandomEngineSeed;
+        void InitializeRandom(std::uint64_t seed);
+        std::uint64_t RandomIndex(std::uint64_t upperExclusive);
         double RandomUnit();
         bool RandomAccept(double probability);
         virtual void SysZip();
@@ -71,6 +74,7 @@ class SystemClass {
         void top(unsigned long long x, unsigned long long y, unsigned long long z, int s, int sn);
         double Str2Double (const std::string &str);
         int Str2Int (const std::string &str);
+        std::uint64_t Str2UInt64(const std::string &str);
         virtual double DistributionFunction(double x, double y, double z, int l) = 0;
         void WriteRasmol (std::string rfile);
         void WriteBlenderSimple (std::string rfile);
@@ -86,28 +90,23 @@ class SystemClass {
         void SetSpecies16S(int x, int y, int z, unsigned long long  s);
         void SetSpecies4S(int x, int y, int z, unsigned long long s);
         void SetSpecies2S(int x, int y, int z, unsigned long long s);
-        void SetSpeciesNS(int x, int y, int z, unsigned long long s);
         void CalcClustDist(int s, int sn);
         std::string InputParam(std::string paramname, std::string filename);
         std::string Int2Str (int n);
         int CheckFreedom (int x, int y, int z);
         virtual void CodeCalculation();
-        int GetRnd();
         void ExchangeSites(int x, int y, int z, int xn, int yn, int zn, int s, int sn);
 
-        double kB=8.61733*pow(10,(-5));
-        long temp1, temp2;
-        int  mx, my, mz, cubx, cuby, cubz, xp1,yp1,zp1,xp2,yp2,zp2,xm1,ym1,zm1,xm2,ym2,zm2;
-        long MaxAtoms, *MCRecords;
-        int * xpr, * ypr, * zpr;
-        unsigned long long  BondCount, n;
-        unsigned long **** xyzpointer, * npr;
-        long double x1, x2, *FitConstants;
+        int cubx, cuby, cubz;
+        // Fixed-site coordinate tables and reverse site lookup. These preserve
+        // the compact legacy lattice layout while solver code works with stable
+        // site indices.
+        int *xpr, *ypr, *zpr;
+        unsigned long ****xyzpointer, *npr;
         std::string name, EvalParam, SysEvalParam, *SpeciesName;
         double kT, lc, Ea;
-        long long njumps;
         std::fstream *ClusterDistributionFile, SCIFile, Logfile;
-        int kk, kk2, *atx, *aty, *atz;
+        int kk, *atx, *aty, *atz;
         char st2[255];
         int clusterDistr[1000];
         int clusterbondsDistr[1000];
@@ -134,12 +133,11 @@ class SystemClass {
 
         inline unsigned long long xyz2cubyz16S(unsigned long long xyz){return (xyz>>LongTwo);}
         inline unsigned long long xyz2cubx16S(unsigned long long xyz){return (xyz>>LongOne);}
-        inline unsigned long long xyz2bi16S(unsigned long long x,unsigned long long y,unsigned long long z){return(4*(y & 3)+16*(z & 3));}
+        inline unsigned long long xyz2bi16S(unsigned long long, unsigned long long y, unsigned long long z){return(4*(y & 3)+16*(z & 3));}
         inline int GetSpecies16S(int x, int y, int z) {
             return (((Long15<<(xyz2bi16S(x, y, z))) & git[xyz2cubx16S(x)][xyz2cubyz16S(y)][xyz2cubyz16S(z)])>>(xyz2bi16S(x, y, z)));
         }
 
         inline int GetSpecies4S(int x, int y, int z) {return ((LongThree<<(xyz2bi4S(x, y, z))) & git[xyz2cubxyz4S(x)][xyz2cubxyz4S(y)][xyz2cubxyz4S(z)])>>(xyz2bi4S(x, y, z));}
-        inline int GetSpeciesNS(int x, int y, int z) {return git[x][y][z];}
         inline int GetSpecies2S(int x, int y, int z) {return ((LongOne<<(xyz2bi2S(x, y, z))) & git[xyz2cubxyz2S(x)][xyz2cubxyz2S(y)][xyz2cubxyz2S(z)])>>(xyz2bi2S(x, y, z));}
 };

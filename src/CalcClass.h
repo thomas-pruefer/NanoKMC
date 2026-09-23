@@ -25,6 +25,5 @@ class CalcClass {
     protected:
         int NSpecies;
         std::fstream CalcDatafile;
-        std::fstream analysefile;
         const double lc=0.4338;
 };

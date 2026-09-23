@@ -66,7 +66,7 @@ int ChangeDirectory(const char* path) {
 void PrintVersion() {
     std::cout << "NanoKMC " << NANOKMC_VERSION;
 #ifdef NANOKMC_PAPER_BUILD_ENABLED
-    std::cout << " (paper-build compiler policy)";
+    std::cout << " (manuscript-benchmark compiler policy)";
 #else
     std::cout << " (standard compiler policy)";
 #endif
@@ -86,7 +86,7 @@ void PrintHelp() {
               << "Supported solvers:\n";
     PrintSupportedSolvers(std::cout);
     std::cout << "\nKMCRateCategoryOptimized: RateCategoryCount=1|2|4|8 "
-                 "(default/paper setting: 4).\n\n"
+                 "(default validated setting: 4).\n\n"
               << "Simulation / morphology EvalParam tokens:\n"
               << "  Benchmark\n"
               << "  ClusterDistribution\n"
